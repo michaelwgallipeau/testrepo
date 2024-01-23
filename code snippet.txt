@@ -1,0 +1,43 @@
+	protected function testthis()
+	{
+		$user = 'JOHN';
+		
+		/************* Step 1: Setup IBM i connection **************/
+		try
+		{
+			$tkConnection = ToolkitService::getInstance('*LOCAL', '', '', 'ibm_db2');
+		}
+		catch (Exception $ex) 
+		{
+			echo $ex->getMessage() . "<br>\n";
+			echo 'File: ' . $ex->getFile() . ':' . $ex->getLine() . "<br>\n";
+			die();
+		}
+
+		/************** Step 2: Setup parameter list *****************/
+		/* See here for more information: http://files.zend.com/help/previous-version/Zend-Server-5.1-IBMi/define_program_parameters.htm */
+		$params[] = $tkConnection->AddParameterChar('in', 10, '', 'user', $user);
+		$params[] = $tkConnection->AddParameterChar('out', 10, '', 'user', $user);
+
+
+		/************** Step 3: Call the program ******************/
+
+		$result = $tkConnection->PgmCall('bsstest', 'websmartdv', $params, NULL, NULL);
+		if ($result)
+		{
+			extract($result['io_param']);
+	
+			// It is recommended to put any code relying on the
+			// returned values from the PGM call in this block
+			echo 'user: ' . $user . '<br>';
+
+		}
+		else
+		{
+			echo 'Error executing PGM.';
+		}
+
+		/************** Step 4: Close connection *****************/
+		$tkConnection->disconnect();
+	
+	}
